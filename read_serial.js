@@ -1,5 +1,26 @@
+
+/**
+  * @overview OpenMV　Camから位置座標をシリアル通信で読み取る
+  * @author {@link https://github.com/kaneko656 Shoma Kaneko}
+  * @version 1.0.0
+  * @module read_serial
+  */
+
 const serialport = require('serialport')
 const Readline = serialport.parsers.Readline
+
+let positionCallback = () => {}
+
+/**
+ * 読み取ったシリアルデータをコールバックする
+ * @param  {callback} callback
+ */
+
+module.exports = (callback = () => {}) => {
+  positionCallback = callback
+}
+
+
 
 let portName = null
 serialport.list(function(err, ports) {
@@ -50,7 +71,8 @@ function open() {
                     pingProcess(port, obj.data)
                 }
                 if (obj.type == 'position') {
-                    positionProcess(obj.data)
+                    positionCallback(obj.data)
+                    // positionProcess(obj.data)
                 }
             }
         })
@@ -73,7 +95,7 @@ let lastPingTime = -1
 let pingProcess = (port, data) => {
     lastPingTime = Date.now()
     if (data.fps) {
-        console.log('fps: ' + Number(data.fps).toFixed(3))
+        // console.log('fps: ' + Number(data.fps).toFixed(3))
     }
     setTimeout(() => {
         // console.log('ping  ' + (Date.now() - lastPingTime))
@@ -89,7 +111,7 @@ let positionProcess = (data) => {
     let target = {
         x: 0,
         y: 0,
-        z: -5
+        z: 0
     }
     let print = ''
     let Tx = Number(data.Tx) || 0
